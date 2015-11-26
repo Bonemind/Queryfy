@@ -8,4 +8,11 @@ gem 'rails', rails
 
 gem 'filter_lexer', '~>0.1'
 
+gem 'pry'
+gem 'pry-doc'
+gem 'pry-nav'
+gem 'pry-rescue'
+gem 'pry-stack_explorer'
+
+
 gemspec
