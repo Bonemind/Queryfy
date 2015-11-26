@@ -34,10 +34,10 @@ class ConditionTest < test_framework
 		query_string = 'name=="name1"&&description=="desc1"||description=="desc1"'
 		assert_equal 1, TestModel.queryfy(query_string).count
 
-		query_string = 'name=="name2"&&description=="desc1"||description=="desc1"'
+		query_string = 'name=="name2"&&description=="desc1"||description=="desc2"'
 		assert_equal 1, TestModel.queryfy(query_string).count
 
-		query_string = 'name=="name2"&&description=="desc1"||description=="desc'
+		query_string = 'name=="name2"&&description=="desc1"||description=~"%desc%"'
 		assert_equal 3, TestModel.queryfy(query_string).count
 	end
 

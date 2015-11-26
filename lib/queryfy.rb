@@ -49,6 +49,8 @@ module Queryfy
 		query = query.where(arel_tree) unless arel_tree.nil?
 
 		# Return the results
+		puts ''
+		puts querystring
 		puts arel_tree.to_sql
 		return klass.find_by_sql(query.to_sql)
 	end
@@ -57,9 +59,9 @@ module Queryfy
 		elements.each_with_index do |element, idx|
 			next if element.is_a?(FilterLexer::LogicOperator)
 			operator = nil
-			operator =elements[idx - 1] if idx > 0
+			operator = elements[idx - 1] if idx > 0
 			if element.is_a?(FilterLexer::Expression)
-				ast = join_ast(ast, arel_table.grouping(element.to_arel(arel_table)), operator)
+				ast = join_ast(ast, element.to_arel(arel_table), operator)
 			elsif element.is_a?(FilterLexer::Group)
 				ast = join_ast(ast, arel_table.grouping(element.to_arel(arel_table)), operator)
 			else
