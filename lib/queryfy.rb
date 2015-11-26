@@ -21,6 +21,11 @@ module Queryfy
 	
 	# Actually builds the query
 	def self.build_query(querystring, klass)
+		# Handle empty and nil queries
+		if (querystring.nil? || querystring == '')
+			return klass.all
+		end
+
 		# Get pagination data
 		pagination = page_and_offset(querystring)
 		querystring = pagination[2]
