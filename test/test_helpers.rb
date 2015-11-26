@@ -8,7 +8,6 @@ def connect!
 end
 
 def setup!
-	puts 'connect'
 	connect!
 	{
 		'test_models' => 'name STRING, description STRING, seqnum INTEGER',

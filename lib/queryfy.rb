@@ -1,9 +1,4 @@
 require "queryfy/version"
-require 'queryfy/enum.rb'
-require 'queryfy/filter_condition.rb'
-require 'queryfy/condition_group.rb'
-require 'queryfy/conditions.rb'
-require 'queryfy/operators.rb'
 require 'filter_lexer'
 require 'queryfy/filter_lexer/formatter.rb'
 require 'pp'
@@ -49,7 +44,7 @@ module Queryfy
 		query = query.where(arel_tree) unless arel_tree.nil?
 
 		# Return the results
-		puts ''
+		puts
 		puts querystring
 		puts arel_tree.to_sql
 		return klass.find_by_sql(query.to_sql)
