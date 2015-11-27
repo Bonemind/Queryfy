@@ -65,7 +65,6 @@ class GroupingTest < test_framework
 
 	def test_multi_nested_and_then_or
 		query_string = '(name=="name2"&&(description=="desc2"&&(name=="name2"&&name=="name1"))||name=="name1")'
-		binding.pry
-		assert_equal 0, TestModel.queryfy(query_string).count
+		assert_equal 3, TestModel.queryfy(query_string).count
 	end
 end

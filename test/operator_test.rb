@@ -27,20 +27,20 @@ class OperatorTest < test_framework
 
 	def test_query_for_like
 		TestModel.populate(3)
-		query_string = 'name=~"%name"'
+		query_string = 'name=~"%name%"'
 		assert_equal 3, TestModel.queryfy(query_string).count
 	end
 
 	def test_query_for_ends_with
 		TestModel.populate(3)
-		query_string = 'name=~"2"'
+		query_string = 'name=~"%2"'
 		assert_equal 1, TestModel.queryfy(query_string).count
 	end
 
 	def test_query_for_starts_with
 		TestModel.populate(3)
 		TestModel.create(name: 'something', description: '', seqnum: '7')
-		query_string = 'name=~"%name%"'
+		query_string = 'name=~"name%"'
 		assert_equal 3, TestModel.queryfy(query_string).count
 	end
 

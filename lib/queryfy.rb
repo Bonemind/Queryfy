@@ -44,23 +44,21 @@ module Queryfy
 		query = query.where(arel_tree) unless arel_tree.nil?
 
 		# Return the results
-		puts
-		puts querystring
-		puts arel_tree.to_sql
 		return klass.find_by_sql(query.to_sql)
 	end
 
 	def self.group_to_arel(arel_table, elements, ast = nil)
 		elements.each_with_index do |element, idx|
-			next if element.is_a?(FilterLexer::LogicOperator)
+			next if element.is_a?(FilterLexer::LogicalOperator)
 			operator = nil
 			operator = elements[idx - 1] if idx > 0
 			if element.is_a?(FilterLexer::Expression)
-				ast = join_ast(ast, element.to_arel(arel_table), operator)
+				puts 'expre'
+				ast = join_ast(ast, element.to_arel(arel_table, ast), operator)
 			elsif element.is_a?(FilterLexer::Group)
 				ast = join_ast(ast, arel_table.grouping(element.to_arel(arel_table)), operator)
-			else
-				ast = join_ast(ast, element.to_arel(arel_table), operator)
+			elsif element.is_a?(FilterLexer::Filter)
+				ast = element.to_arel(arel_table)
 			end
 		end
 		return ast
