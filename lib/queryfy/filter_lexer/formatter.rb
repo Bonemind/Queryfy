@@ -1,19 +1,4 @@
 module FilterLexer
-
-	class Expression
-		def to_arel(arel_table, ast = nil)
-			ast = Queryfy.group_to_arel(arel_table, elements, ast)
-			return ast
-		end
-	end
-
-	class Group
-		def to_arel(arel_table, ast = nil)
-			ast = Queryfy.group_to_arel(arel_table, elements, ast)
-			return ast
-		end
-	end
-
 	class Filter
 		def to_arel(arel_table)
 			field = elements[0].text_value
