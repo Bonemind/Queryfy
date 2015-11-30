@@ -74,7 +74,7 @@ module Queryfy
 	# Merges an existing ast with the passed nodes and uses the operator as a merge operator
 	def self.join_ast(ast, nodes, operator)
 		if ast.nil? && !operator.nil?
-			fail ('Cannot join on nil tree with operator')
+			raise InvalidFilterFormat, "Cannot join on nil tree with operator near #{operator.text_value}"
 		end
 		if operator.nil? || ast.nil?
 			ast = nodes

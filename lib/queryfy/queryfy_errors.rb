@@ -7,3 +7,6 @@ end
 
 class NoSuchFieldError < QueryfyError
 end
+
+class InvalidFilterFormat < QueryfyError
+end
