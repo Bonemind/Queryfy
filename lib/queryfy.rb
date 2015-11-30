@@ -2,17 +2,24 @@ require "queryfy/version"
 require 'filter_lexer'
 require 'queryfy/filter_lexer/formatter.rb'
 require 'queryfy/queryfy_errors.rb'
+require 'queryfy/configuration'
 require 'active_record'
 
 module Queryfy
-	MAX_LIMIT = 100
-	DEFAULT_LIMIT = 50
+	extend Configuration
+	define_setting :max_limit, 100
+	define_setting :default_limit, 50
+
 	# Actually builds the query
 	def self.build_query(klass, querystring, limit = 50, offset = 0)
-		limit = [MAX_LIMIT, limit.to_i].min
+		limit = [max_limit, limit.to_i].min
 		# Handle empty and nil queries
 		if (querystring.nil? || querystring == '')
-			return {data: klass.all.limit(limit).offset(offset), count: klass.all.count, limit: limit.to_i, offset: offset.to_i}
+			return {
+				data: klass.limit(limit).offset(offset), 
+				count: klass.all.count, 
+				limit: limit.to_i, offset: offset.to_i
+			}
 		end
 
 		begin
@@ -97,7 +104,7 @@ class ActiveRecord::Base
 	def self.queryfy(queryparams)
 		filter = ''
 		offset = 0
-		limit = Queryfy::DEFAULT_LIMIT
+		limit = Queryfy::default_limit
 		if (queryparams.is_a?(Hash))
 			filter = queryparams['filter'] unless queryparams['filter'].nil?
 			offset = queryparams['offset'] unless queryparams['offset'].nil?

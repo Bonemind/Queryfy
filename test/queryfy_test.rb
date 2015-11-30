@@ -103,4 +103,50 @@ class QueryfyTest < test_framework
 		resp = TestModel.queryfy(Rack::Utils.parse_nested_query(querystring))
 		assert_equal 1, resp[:count]
 	end
+
+	def test_max_limit
+		TestModel.populate(150)
+		querystring = "limit=30"
+		resp = TestModel.queryfy(Rack::Utils.parse_nested_query(querystring))
+		assert_equal 30, resp[:data].count
+
+		querystring = 'limit=50'
+		resp = TestModel.queryfy(Rack::Utils.parse_nested_query(querystring))
+		assert_equal 50, resp[:data].count
+
+		querystring = 'limit=100'
+		resp = TestModel.queryfy(Rack::Utils.parse_nested_query(querystring))
+		assert_equal 100, resp[:data].count
+
+		querystring = 'limit=120'
+		resp = TestModel.queryfy(Rack::Utils.parse_nested_query(querystring))
+		assert_equal 100, resp[:data].count
+
+		Queryfy.max_limit = 50
+
+		querystring = 'limit=100'
+		resp = TestModel.queryfy(Rack::Utils.parse_nested_query(querystring))
+		assert_equal 50, resp[:data].count
+
+		Queryfy.max_limit = 100
+	end
+
+	def test_config
+		assert_equal 100, Queryfy.max_limit
+		assert_equal 50, Queryfy.default_limit
+		Queryfy.configuration do |config|
+			config.max_limit = 50
+			config.default_limit = 10
+		end
+
+		assert_equal 50, Queryfy.max_limit
+		assert_equal 10, Queryfy.default_limit
+
+		Queryfy.configuration do |config|
+			config.max_limit = 100
+			config.default_limit = 50
+		end
+		assert_equal 100, Queryfy.max_limit
+		assert_equal 50, Queryfy.default_limit
+	end
 end
