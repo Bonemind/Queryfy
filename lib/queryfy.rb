@@ -1,23 +1,8 @@
 require "queryfy/version"
 require 'filter_lexer'
 require 'queryfy/filter_lexer/formatter.rb'
-require 'pp'
-require 'pry'
 
 module Queryfy
-	# The start brace that denotes a conditiongroup
-	START_BRACE = '('
-
-	# The end brace that denotes a conditiongroup
-	END_BRACE = ')'
-
-	# Matches the contents of braces
-	# For example: string (some (string (x)) aa) would result in:
-	# 1: some (string (x)) aa
-	# 2: string (x)
-	# 3: x
-	BRACE_MATCHER = /(?=\(((?:[^()]++|\(\g<1>\))++)\))/
-	
 	# Actually builds the query
 	def self.build_query(querystring, klass)
 		# Handle empty and nil queries
@@ -48,6 +33,9 @@ module Queryfy
 		return klass.find_by_sql(query.to_sql)
 	end
 
+	# Cleans the filterlexer tree
+	# Output is an array with either filterentries and operators, or an array of filterentries and operators
+	# The latter represents a group
 	def self.clean_tree(tree, input = [])
 		tree.elements.each do |el|
 			if el.is_a?(FilterLexer::Expression)
@@ -61,6 +49,7 @@ module Queryfy
 		return input
 	end
 
+	# Converts a cleaned tree to something arel can understand
 	def self.cleaned_to_arel(arel_table, tree, ast = nil)
 		tree.each_with_index do |el, idx|
 			next if el.is_a?(FilterLexer::LogicalOperator)
@@ -76,6 +65,7 @@ module Queryfy
 		return ast
 	end
 
+	# Merges an existing ast with the passed nodes and uses the operator as a merge operator
 	def self.join_ast(ast, nodes, operator)
 		if ast.nil? && !operator.nil?
 			fail ('Cannot join on nil tree with operator')
@@ -123,7 +113,7 @@ module Queryfy
 end
 
 class ActiveRecord::Base
-	def self.queryfy(querystring)
+	def self.queryfy(queryparams)
 		return Queryfy.build_query(querystring, self)
 	end
 end

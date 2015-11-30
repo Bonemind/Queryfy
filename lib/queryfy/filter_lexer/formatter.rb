@@ -1,21 +1,32 @@
 module FilterLexer
 	class Filter
+		# Converts a FilterLexer::Filter to an arel node
 		def to_arel(arel_table)
+			# Get the elements we want to operate on
 			field = elements[0].text_value
 			operator_method = elements[1].to_arel
 			val = elements[2].text_value
+
+			# Check if the field we want to filter on exists
 			field_index = arel_table.engine.column_names.index(field)
+
+			# Field does not exist, fail
 			if field_index.nil?
 				puts "Unknown column #{@field}"
 				fail
 			else
+				# Get the arel field name from our input, just to make sure
+				# there is nothing weird is in the input
 				field = arel_table.engine.column_names[field_index]
 			end
 			ast_node = arel_table[field.to_sym]
+
+			# Build an arel node from the resolved operator, value and field
 			return ast_node.send(operator_method, val)
 		end
 	end
 
+	# The list below converts Filter::Operators to arel functions
 	class AndOperator
 		def to_arel
 			return 'and'
