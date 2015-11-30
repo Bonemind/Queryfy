@@ -6,10 +6,12 @@ gem 'sqlite3'
 rails = ENV['RAILS'] || '~> 4.2.0'
 gem 'rails', rails
 
-gem 'pry'
-gem 'pry-doc'
-gem 'pry-nav'
-gem 'pry-rescue'
-gem 'pry-stack_explorer'
+group :development do
+	gem 'pry'
+	gem 'pry-doc'
+	gem 'pry-nav'
+	gem 'pry-rescue'
+	gem 'pry-stack_explorer'
+end
 
 gemspec
