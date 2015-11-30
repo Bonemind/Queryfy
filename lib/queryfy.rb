@@ -1,6 +1,7 @@
 require "queryfy/version"
 require 'filter_lexer'
 require 'queryfy/filter_lexer/formatter.rb'
+require 'queryfy/queryfy_errors.rb'
 
 module Queryfy
 	# Actually builds the query
@@ -10,7 +11,12 @@ module Queryfy
 			return klass.all
 		end
 
-		tree = FilterLexer::Parser.parse(querystring)
+		begin
+			tree = FilterLexer::Parser.parse(querystring)
+		rescue FilterLexer::ParseException => e
+			raise FilterParseError, "Failed to parse querystring, #{ e.message }"
+			return
+		end
 
 		# Get pagination data
 		# pagination = page_and_offset(querystring)
@@ -113,7 +119,7 @@ module Queryfy
 end
 
 class ActiveRecord::Base
-	def self.queryfy(queryparams)
+	def self.queryfy(querystring)
 		return Queryfy.build_query(querystring, self)
 	end
 end

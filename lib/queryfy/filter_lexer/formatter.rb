@@ -1,3 +1,4 @@
+require 'queryfy/queryfy_errors'
 module FilterLexer
 	class Filter
 		# Converts a FilterLexer::Filter to an arel node
@@ -12,8 +13,7 @@ module FilterLexer
 
 			# Field does not exist, fail
 			if field_index.nil?
-				puts "Unknown column #{@field}"
-				fail
+				raise NoSuchFieldError, "Unknown field #{ field }"
 			else
 				# Get the arel field name from our input, just to make sure
 				# there is nothing weird is in the input
