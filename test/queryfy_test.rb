@@ -18,10 +18,6 @@ class QueryfyTest < test_framework
 		assert(TestModel.respond_to?(:queryfy))
 	end
 
-	def test_no_queryfy
-		assert(!PlainModel.respond_to?(:queryfy))
-	end
-
 	def test_returns_all_with_empty_query
 		TestModel.populate(3)
 		query_string = ''

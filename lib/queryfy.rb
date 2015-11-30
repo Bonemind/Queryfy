@@ -98,10 +98,8 @@ module Queryfy
 		end
 		return ast
 	end
-end
 
-class ActiveRecord::Base
-	def self.queryfy(queryparams)
+	def self.from_queryparams(klass, queryparams)
 		filter = ''
 		offset = 0
 		limit = Queryfy::default_limit
@@ -112,6 +110,6 @@ class ActiveRecord::Base
 		elsif(queryparams.is_a?(String))
 			filter = queryparams
 		end
-		return Queryfy.build_query(self, filter, limit, offset)
+		return Queryfy.build_query(klass, filter, limit, offset)
 	end
 end

@@ -29,15 +29,27 @@ Or install it yourself as:
 ## Usage
 
 ### General
+
+Register queryfy method everywhere
 ```
-require 'queryfy'
+require 'queryfy/core_ext'
 
 class SomeModel
-    include Queryfy
 end
 
 SomeModel.queryfy(queryparams)
 ```
+Register queryfy only on specified model
+```
+require 'queryfy/acts_as_queryfy'
+
+class SomeModel
+    acts_as_queryfy
+end
+
+SomeModel.queryfy(queryparams)
+```
+
 
 The gem adds makes a `queryfy` method available to ActiveRecord::Base when included.
 The queryfy method takes a hash in the following format:
