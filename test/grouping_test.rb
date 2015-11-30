@@ -14,7 +14,6 @@ class GroupingTest < test_framework
 		TestModel.populate(3)
 	end
 
-
 	def test_nested_and_or
 		query_string = '(name=="name1"&&description=="desc1")||description=="desc2"'
 		assert_equal 2, TestModel.queryfy(query_string).count
@@ -64,7 +63,10 @@ class GroupingTest < test_framework
 	end
 
 	def test_multi_nested_and_then_or
-		query_string = '(name=="name2"&&(description=="desc2"&&(name=="name2"&&name=="name1"))||name=="name1")'
+		query_string = 'name=="name2"&&(description=="desc2"&&(name=="name2"&&name=="name1"))||name=="name1"'
+		assert_equal 1, TestModel.queryfy(query_string).count
+
+		query_string = 'name=="name2"&&(description=="desc2"&&(name=="name2"&&name=="name1"))||name=~"%name%"'
 		assert_equal 3, TestModel.queryfy(query_string).count
 	end
 end

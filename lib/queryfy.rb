@@ -26,7 +26,6 @@ module Queryfy
 		end
 
 		tree = FilterLexer::Parser.parse(querystring)
-		arel_tree = tree.to_arel(klass.arel_table)
 
 		# Get pagination data
 		# pagination = page_and_offset(querystring)
@@ -40,8 +39,8 @@ module Queryfy
 		# Build the query with pagination
 		query = klass.arel_table.project(Arel.star)
 
-		puts arel_tree.to_sql
-		pp self.clean_tree(tree)
+		cleaned_tree = self.clean_tree(tree)
+		arel_tree = self.cleaned_to_arel(klass.arel_table, cleaned_tree)
 		# If we want to actually query, add the conditions to query
 		query = query.where(arel_tree) unless arel_tree.nil?
 
@@ -52,12 +51,29 @@ module Queryfy
 	def self.clean_tree(tree, input = [])
 		tree.elements.each do |el|
 			if el.is_a?(FilterLexer::Expression)
-				input.push(clean_tree(el))
+				input += clean_tree(el)
+			elsif el.is_a?(FilterLexer::Group)
+				input += [clean_tree(el)]
 			else
 				input.push(el)
 			end
 		end
 		return input
+	end
+
+	def self.cleaned_to_arel(arel_table, tree, ast = nil)
+		tree.each_with_index do |el, idx|
+			next if el.is_a?(FilterLexer::LogicalOperator)
+			operator = nil
+			operator = tree[idx - 1] if idx > 0
+			if el.is_a?(Array)
+				ast = join_ast(ast, arel_table.grouping(cleaned_to_arel(arel_table, el)), operator)
+			else
+				ast = join_ast(ast, el.to_arel(arel_table), operator)
+			end
+		end
+
+		return ast
 	end
 
 	def self.group_to_arel(arel_table, elements, ast = nil)
