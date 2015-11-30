@@ -2,13 +2,17 @@ require "queryfy/version"
 require 'filter_lexer'
 require 'queryfy/filter_lexer/formatter.rb'
 require 'queryfy/queryfy_errors.rb'
+require 'active_record'
 
 module Queryfy
+	MAX_LIMIT = 100
+	DEFAULT_LIMIT = 50
 	# Actually builds the query
-	def self.build_query(querystring, klass)
+	def self.build_query(klass, querystring, limit = 50, offset = 0)
+		limit = [MAX_LIMIT, limit.to_i].min
 		# Handle empty and nil queries
 		if (querystring.nil? || querystring == '')
-			return klass.all
+			return {data: klass.all.limit(limit).offset(offset), count: klass.all.count, limit: limit.to_i, offset: offset.to_i}
 		end
 
 		begin
@@ -18,25 +22,29 @@ module Queryfy
 			return
 		end
 
-		# Get pagination data
-		# pagination = page_and_offset(querystring)
-		# querystring = pagination[2]
-		# page = pagination[0].to_i
-		# limit = pagination[1].to_i
-
-		# Calculate offset
-		# offset = page * limit
-
 		# Build the query with pagination
-		query = klass.arel_table.project(Arel.star)
+		query = klass.arel_table.project(Arel.star).take(limit).skip(offset)
 
 		cleaned_tree = self.clean_tree(tree)
 		arel_tree = self.cleaned_to_arel(klass.arel_table, cleaned_tree)
 		# If we want to actually query, add the conditions to query
 		query = query.where(arel_tree) unless arel_tree.nil?
 
+		total = 0
+		if arel_tree.nil?
+			total = klass.all.count
+		else
+			countquery = klass.arel_table.project(klass.arel_table[klass.primary_key.to_sym].count.as('total')).where(arel_tree)
+			results = klass.connection.execute(countquery.to_sql)
+			if results.count == 0
+				raise QueryfyError, 'Failed to select count, this should not happen'
+			else
+				total = results[0]['total']
+			end
+		end
+
 		# Return the results
-		return klass.find_by_sql(query.to_sql)
+		return {data: klass.find_by_sql(query.to_sql), count: total.to_i, limit: limit.to_i, offset: offset.to_i}
 	end
 
 	# Cleans the filterlexer tree
@@ -83,43 +91,20 @@ module Queryfy
 		end
 		return ast
 	end
-
-	private
-
-	# Get page and offset
-	# Remove page and offset from querystring
-	def self.page_and_offset(str)
-		condition_regex = Condition.regexify
-
-		# Matches 0-1 Condition $page = number
-		page_matcher = /(#{condition_regex})?\$page=([0-9]+)/
-
-		# Matches 0-1 Condition $limit = number
-		limit_matcher = /(#{condition_regex})?\$limit=([0-9]+)/
-		page_match = str.match(page_matcher)
-		limit_match = str.match(limit_matcher)
-
-		page = 0
-		limit = 50
-
-		# If we have a page match, get the page number, and remove page from the string
-		if page_match
-			page = page_match[2]
-			str = str.remove(page_match[0])
-		end
-
-		# If we have a limit match, get the limit number, and remove limit from the string
-		if limit_match
-			limit = limit_match[2]
-			str = str.remove(limit_match[0])
-		end
-
-		return [page, limit, str]
-	end
 end
 
 class ActiveRecord::Base
-	def self.queryfy(querystring)
-		return Queryfy.build_query(querystring, self)
+	def self.queryfy(queryparams)
+		filter = ''
+		offset = 0
+		limit = Queryfy::DEFAULT_LIMIT
+		if (queryparams.is_a?(Hash))
+			filter = queryparams['filter'] unless queryparams['filter'].nil?
+			offset = queryparams['offset'] unless queryparams['offset'].nil?
+			limit = queryparams['limit'] unless queryparams['limit'].nil?
+		elsif(queryparams.is_a?(String))
+			filter = queryparams
+		end
+		return Queryfy.build_query(self, filter, limit, offset)
 	end
 end
