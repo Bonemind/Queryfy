@@ -1,4 +1,4 @@
-# Queryfy [![Build Status](https://travis-ci.org/Bonemind/Queryfy.svg?branch=master)](https://travis-ci.org/Bonemind/Queryfy)[![Dependency Status](https://gemnasium.com/Bonemind/Queryfy.svg)](https://gemnasium.com/Bonemind/Queryfy)
+# Queryfy [![Build Status](https://travis-ci.org/Bonemind/Queryfy.svg?branch=master)](https://travis-ci.org/Bonemind/Queryfy)  [![Dependency Status](https://gemnasium.com/Bonemind/Queryfy.svg)](https://gemnasium.com/Bonemind/Queryfy)
 
 Queryfy is a gem that allows you to simply and easily paginate and filter activerecord models using queryparams.
 The gem assumes you pass it a hash of queryparams which contain a filterstring in `filter`, and optionally `offset` and `limit` fields.
