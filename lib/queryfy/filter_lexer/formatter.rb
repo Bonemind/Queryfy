@@ -13,7 +13,7 @@ module FilterLexer
 
 			# Field does not exist, fail
 			if field_index.nil?
-				raise NoSuchFieldError, "Unknown field #{ field }"
+				raise NoSuchFieldError.new("Unknown field #{ field }", field)
 			else
 				# Get the arel field name from our input, just to make sure
 				# there is nothing weird is in the input

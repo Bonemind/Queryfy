@@ -42,6 +42,11 @@ class QueryfyTest < test_framework
 		assert_raises NoSuchFieldError do
 			TestModel.queryfy(querystring)
 		end
+		begin
+			TestModel.queryfy(querystring)
+		rescue NoSuchFieldError => e
+			assert_equal e.field, 'aaaaaa'
+		end
 	end
 
 	def test_raises_are_queryfy_exceptions
