@@ -150,4 +150,12 @@ class QueryfyTest < test_framework
 		assert_equal 100, Queryfy.max_limit
 		assert_equal 50, Queryfy.default_limit
 	end
+
+	def test_offset_string
+		TestModel.populate(150)
+
+		querystring = 'id>0'
+		resp = Queryfy.build_query(TestModel, querystring, "50", "50")
+		assert_equal 50, resp[:data].count
+	end
 end

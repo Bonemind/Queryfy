@@ -13,6 +13,7 @@ module Queryfy
 	# Actually builds the query
 	def self.build_query(klass, querystring, limit = 50, offset = 0)
 		limit = [max_limit, limit.to_i].min
+		offset = offset.to_i
 		# Handle empty and nil queries
 		if (querystring.nil? || querystring == '')
 			return {
