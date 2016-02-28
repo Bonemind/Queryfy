@@ -54,9 +54,9 @@ SomeModel.queryfy(queryparams)
 The gem adds makes a `queryfy` method available to ActiveRecord::Base when included.
 The queryfy method takes a hash in the following format:
 ```
-{'filter': 'name=="name", 'offset': 50, 'limit': 10}
+{'filter': 'name=="name", 'order': 'id-', 'offset': 50, 'limit': 10}
 ```
-All three are optional, and any extra values are ignored.
+All four are optional, and any extra values are ignored.
 
 Defaults:
 ```
@@ -69,6 +69,28 @@ If filter is either nil or empty, queryfy will assume everything should be selec
 After calling `queryfy` you will get back the following:
 ```
 {data: [your data], count: total results, offset: the offset used, limit: the limit used}
+```
+
+### Pagination
+
+Queryfy supports pagination by passing offset and limit queryparams. offset
+skips the first x records, while limit only selects y records
+
+```
+# Returns the second page of results since we skip the first 25 and want 25 records a page
+offset=25&limit=25
+```
+
+### Ordering
+
+Ordering is also supported by queryfy. To add a certain order you use the order
+queryparam. To order on multiple fields you should pass the fields comma
+seperated. By default fields are ordered ascending, to order them descending
+you postfix the field with a minus, i.e `id-,name+,email-`
+
+```
+# Would order the results by name, and within that by the records that were created the farthest back.
+name-,created_at+
 ```
 
 ### Exceptions
