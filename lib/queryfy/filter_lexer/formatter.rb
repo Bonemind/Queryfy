@@ -8,17 +8,8 @@ module FilterLexer
 			operator_method = elements[1].to_arel
 			val = elements[2].text_value
 
-			# Check if the field we want to filter on exists
-			field_index = arel_table.engine.column_names.index(field)
+			field = Queryfy.get_arel_field(arel_table, field)
 
-			# Field does not exist, fail
-			if field_index.nil?
-				raise NoSuchFieldError.new("Unknown field #{ field }", field)
-			else
-				# Get the arel field name from our input, just to make sure
-				# there is nothing weird is in the input
-				field = arel_table.engine.column_names[field_index]
-			end
 			ast_node = arel_table[field.to_sym]
 
 			# Build an arel node from the resolved operator, value and field

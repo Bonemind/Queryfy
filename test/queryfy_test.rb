@@ -155,7 +155,39 @@ class QueryfyTest < test_framework
 		TestModel.populate(150)
 
 		querystring = 'id>0'
-		resp = Queryfy.build_query(TestModel, querystring, "50", "50")
+		resp = Queryfy.build_query(TestModel, querystring, '', "50", "50")
 		assert_equal 50, resp[:data].count
+	end
+
+	def test_multiple_ordering
+		t1 = TestModel.create(name: '1', seqnum: 2)
+		t2 = TestModel.create(name: '1', seqnum: 3)
+		t3 = TestModel.create(name: '2', seqnum: 1)
+		querystring = 'order=name,seqnum-'
+		resp = TestModel.queryfy(Rack::Utils.parse_nested_query(querystring))
+		assert_equal t2, resp[:data].first
+	end
+
+	def test_ordering_no_query
+		TestModel.populate(10)
+		querystring = 'order=seqnum-'
+		resp = TestModel.queryfy(Rack::Utils.parse_nested_query(querystring))
+		prev = 11
+		resp[:data].each do |tm|
+				  assert_equal true, tm.seqnum < prev
+				  prev = tm.seqnum
+		end
+	end
+
+	def test_ordering_query
+		TestModel.populate(10)
+		querystring = 'filter=seqnum>5&order=seqnum-'
+		resp = TestModel.queryfy(Rack::Utils.parse_nested_query(querystring))
+		assert_equal resp[:data].size, 5
+		prev = 11
+		resp[:data].each do |tm|
+				  assert_equal true, tm.seqnum < prev
+				  prev = tm.seqnum
+		end
 	end
 end

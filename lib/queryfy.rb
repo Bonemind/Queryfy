@@ -11,14 +11,15 @@ module Queryfy
 	define_setting :default_limit, 50
 
 	# Actually builds the query
-	def self.build_query(klass, querystring, limit = 50, offset = 0)
+	def self.build_query(klass, querystring, orderstring, limit = 50, offset = 0)
 		limit = [max_limit, limit.to_i].min
 		offset = offset.to_i
 		# Handle empty and nil queries
 		if (querystring.nil? || querystring == '')
+				data = self.add_order(klass.arel_table, klass.limit(limit).offset(offset), orderstring)
 			return {
-				data: klass.limit(limit).offset(offset), 
-				count: klass.all.count, 
+				data: data,
+				count: klass.all.count,
 				limit: limit.to_i, offset: offset.to_i
 			}
 		end
@@ -37,6 +38,7 @@ module Queryfy
 		arel_tree = self.cleaned_to_arel(klass.arel_table, cleaned_tree)
 		# If we want to actually query, add the conditions to query
 		query = query.where(arel_tree) unless arel_tree.nil?
+		query = self.add_order(klass.arel_table, query, orderstring)
 
 		total = 0
 		if arel_tree.nil?
@@ -103,14 +105,58 @@ module Queryfy
 	def self.from_queryparams(klass, queryparams)
 		filter = ''
 		offset = 0
+		order = ''
 		limit = Queryfy::default_limit
 		if (queryparams.is_a?(Hash))
 			filter = queryparams['filter'] unless queryparams['filter'].nil?
 			offset = queryparams['offset'] unless queryparams['offset'].nil?
 			limit = queryparams['limit'] unless queryparams['limit'].nil?
+			order = queryparams['order'] unless queryparams['order'].nil?
 		elsif(queryparams.is_a?(String))
 			filter = queryparams
 		end
-		return Queryfy.build_query(klass, filter, limit, offset)
+		return Queryfy.build_query(klass, filter, order, limit, offset)
+	end
+
+	def self.add_order(arel_table, arel_query, orderstring)
+		# adds order conditions to the passed query
+
+		# If we don't want to order, return the oridinal query
+		return arel_query if orderstring.nil? || orderstring == ''
+
+		# Split the fields we want to order on
+		split = orderstring.split(',')
+		
+		# Determine how we want to order each field (asc or desc)
+		split.each do |s|
+				order_char = s[-1, 1]
+				s.chop! if order_char == '+' || order_char == '-'
+				next unless order_char == '+' || order_char == '-'
+				field = Queryfy.get_arel_field(arel_table, s)
+				order = :asc
+				if order_char == '-'
+						order = :desc
+				end
+
+				# Add the order as a string, since hash is unsupported with query
+				arel_query = arel_query.order("#{field} #{order}")
+		end
+		return arel_query
+	end
+
+	def self.get_arel_field(arel_table, field)
+		# Check if the field we want to filter on exists
+		field_index = arel_table.engine.column_names.index(field)
+		arel_field = nil
+
+		# Field does not exist, fail
+		if field_index.nil?
+			raise NoSuchFieldError.new("Unknown field #{ field }", field)
+		else
+			# Get the arel field name from our input, just to make sure
+			# there is nothing weird is in the input
+			arel_field = arel_table.engine.column_names[field_index]
+		end
+		return arel_field
 	end
 end
