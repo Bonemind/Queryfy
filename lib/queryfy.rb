@@ -131,7 +131,7 @@ module Queryfy
 		split.each do |s|
 				order_char = s[-1, 1]
 				s.chop! if order_char == '+' || order_char == '-'
-				next unless order_char == '+' || order_char == '-'
+				order_char = '+' unless order_char == '+' || order_char == '-'
 				field = Queryfy.get_arel_field(arel_table, s)
 				order = :asc
 				if order_char == '-'
