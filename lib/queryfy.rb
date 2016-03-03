@@ -12,7 +12,6 @@ module Queryfy
 
 	# Actually builds the query
 	def self.build_query(klass, querystring, orderstring, limit = 50, offset = 0)
-		return 27
 		limit = [max_limit, limit.to_i].min
 		offset = offset.to_i
 		# Handle empty and nil queries
