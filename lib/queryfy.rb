@@ -35,7 +35,7 @@ module Queryfy
 		query = klass.arel_table.project(Arel.star).take(limit).skip(offset)
 
 		cleaned_tree = self.clean_tree(tree)
-		arel_tree = self.cleaned_to_arel(klass.arel_table, cleaned_tree)
+		arel_tree = self.cleaned_to_arel(klass, cleaned_tree)
 		# If we want to actually query, add the conditions to query
 		query = query.where(arel_tree) unless arel_tree.nil?
 		query = self.add_order(klass.arel_table, query, orderstring)
@@ -74,15 +74,16 @@ module Queryfy
 	end
 
 	# Converts a cleaned tree to something arel can understand
-	def self.cleaned_to_arel(arel_table, tree, ast = nil)
+	def self.cleaned_to_arel(table, tree, ast = nil)
+		arel_table = table.arel_table
 		tree.each_with_index do |el, idx|
 			next if el.is_a?(FilterLexer::LogicalOperator)
 			operator = nil
 			operator = tree[idx - 1] if idx > 0
 			if el.is_a?(Array)
-				ast = join_ast(ast, arel_table.grouping(cleaned_to_arel(arel_table, el)), operator)
+				ast = join_ast(ast, arel_table.grouping(cleaned_to_arel(table, el)), operator)
 			else
-				ast = join_ast(ast, el.to_arel(arel_table), operator)
+				ast = join_ast(ast, el.to_arel(table), operator)
 			end
 		end
 
